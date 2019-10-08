@@ -1,6 +1,73 @@
 import Foundation
 import Combine
 
+// MARK: - Subscription storage
+
+var subscriptions = Set<AnyCancellable>()
+
+// MARK: - Futures
+
+let valueToIncrementInTheFuture = 1
+
+let futureIncrement = Future<Int, Never> { promise in
+    print("Start future increment")
+    DispatchQueue.global().asyncAfter(deadline: .now() + 5) {
+        promise(.success(valueToIncrementInTheFuture + 1))
+    }
+}
+
+//let s = futureIncrement.sink(receiveCompletion: {
+//    print($0)
+//}) {
+//    print($0)
+//}
+
+// Storing directly in subscriptions set instead of variable
+futureIncrement.sink(receiveCompletion: {
+    print($0)
+}) {
+    print($0)
+}.store(in: &subscriptions)
+
+futureIncrement.sink(receiveCompletion: {
+    print("Second", $0)
+}) {
+    print("Second", $0)
+}.store(in: &subscriptions)
+
+// Start future increment printed only once which means that future does not re-execute a promise. It replays the output.
+// Also, prmise executes right away, without a subscriber like standard publisher
+
+// MARK: - Custom Subscriber
+
+// Int subscriber
+final class IntSubscriber: Subscriber {
+
+    typealias Input = Int
+    typealias Failure = Never // Guarantee not to produce an error
+
+    func receive(completion: Subscribers.Completion<Never>) {
+        print("Completion: ", completion)
+    }
+
+    func receive(subscription: Subscription) {
+        // Receive subscription and request a max number of items from publisher
+        subscription.request(.max(4))
+    }
+
+    func receive(_ input: Int) -> Subscribers.Demand {
+        print(input)
+        return .none
+    }
+}
+
+// Int publisher
+let intPublisher = (1...6).publisher
+
+// Subscribe to publisher
+let intSubscriber = IntSubscriber()
+intPublisher.subscribe(intSubscriber)
+
 // MARK: - Notification PubSub
 
 print("Notification PubSub")
@@ -43,14 +110,14 @@ _ = just.sink(receiveCompletion: {
     print("Completion", $0)
 }, receiveValue: {
     print("Value", $0)
-})
+    })
 
 // MARK: - KVO PubSub
 
 print("KVO PubSub")
 
 // A class which will have changed the property value by the publisher
-class TestClass {
+final class TestClass {
     var testValue: String = "" {
         didSet {
             print(testValue)
@@ -60,7 +127,5 @@ class TestClass {
 
 let testObject = TestClass()
 
-let publisher = ["Hello", "World"].publisher
-_ = publisher.assign(to: \.testValue, on: testObject)
-
-
+let stringPublisher = ["Hello", "World"].publisher
+_ = stringPublisher.assign(to: \.testValue, on: testObject)
