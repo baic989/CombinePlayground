@@ -81,9 +81,21 @@ let intSubscription = intSubject.sink(receiveCompletion: { completion in
 }
 
 intSubject.send(42)
-intSubscription.cancel()
-intSubject.send(completion: .finished)
+//intSubscription.cancel()
+//intSubject.send(completion: .finished)
 intSubject.send(24)
+
+// MARK: - Type erased publisher
+
+// Useful to hide subject implementation
+// subject wraps publisher in AnyPublisher
+let typeErasedPublisher = intSubject.eraseToAnyPublisher()
+
+typeErasedPublisher.sink { value in
+    print("type erased \(value)")
+}.store(in: &subscriptions)
+
+intSubject.send(99)
 
 // MARK: - Notification PubSub
 
