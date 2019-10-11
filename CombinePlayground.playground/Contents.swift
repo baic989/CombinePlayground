@@ -68,6 +68,23 @@ let intPublisher = (1...6).publisher
 let intSubscriber = IntSubscriber()
 intPublisher.subscribe(intSubscriber)
 
+// MARK: - Subject
+
+let intSubject = PassthroughSubject<Int, Never>()
+
+intSubject.subscribe(intSubscriber)
+
+let intSubscription = intSubject.sink(receiveCompletion: { completion in
+    print("Completion: \(completion)")
+}) { value in
+    print("Value: \(value)")
+}
+
+intSubject.send(42)
+intSubscription.cancel()
+intSubject.send(completion: .finished)
+intSubject.send(24)
+
 // MARK: - Notification PubSub
 
 print("Notification PubSub")
