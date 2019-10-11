@@ -1,3 +1,3 @@
 # Combine Playground
 
-Playing with Combine
+Combine examples
