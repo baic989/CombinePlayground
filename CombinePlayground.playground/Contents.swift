@@ -5,6 +5,14 @@ import Combine
 
 var subscriptions = Set<AnyCancellable>()
 
+// MARK: - Collect operator
+
+["A", "B", "C", "D", "E"].publisher.collect(2).sink(receiveCompletion: { completion in
+    print("Completion", completion)
+}) { value in
+    print(value)
+}.store(in: &subscriptions)
+
 // MARK: - Futures
 
 let valueToIncrementInTheFuture = 1
