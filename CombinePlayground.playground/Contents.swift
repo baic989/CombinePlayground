@@ -5,6 +5,18 @@ import Combine
 
 var subscriptions = Set<AnyCancellable>()
 
+// MARK: - Try map
+
+Just("Invalid path").tryMap {
+    try FileManager.default.contentsOfDirectory(atPath: $0)
+}.sink(receiveCompletion: { completion in
+    print(completion)
+}) { data in
+    print(data)
+}.store(in: &subscriptions)
+
+
+
 // MARK: - Map oprator on key paths
 
 struct Player {
