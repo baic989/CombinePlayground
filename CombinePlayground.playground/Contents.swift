@@ -5,6 +5,32 @@ import Combine
 
 var subscriptions = Set<AnyCancellable>()
 
+// MARK: - Map oprator on key paths
+
+struct Player {
+    let hp: Int
+    let mana: Int
+}
+
+let mage = Player(hp: 10, mana: 30)
+let magePublisher = PassthroughSubject<Player, Never>()
+
+magePublisher.map(\.hp, \.mana).sink { hp, mana in
+    print("Mage has \(hp)hp and \(mana)mana")
+}.store(in: &subscriptions)
+
+magePublisher.send(mage)
+
+// MARK: - Collect operator
+
+[1, 2, 3, 4, 5].publisher.map({ input -> Int in
+    input * input
+}).sink(receiveCompletion: { completion in
+    print(completion)
+}) { value in
+    print(value)
+}
+
 // MARK: - Collect operator
 
 ["A", "B", "C", "D", "E"].publisher.collect(2).sink(receiveCompletion: { completion in
