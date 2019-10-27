@@ -5,6 +5,21 @@ import Combine
 
 var subscriptions = Set<AnyCancellable>()
 
+// MARK: - Scan
+
+var dailyGainLoss: Int {
+    .random(in: -10...10)
+}
+let october2019 = (0..<22)
+    .map({ _ in dailyGainLoss })
+    .publisher
+
+october2019.scan(100) { (last, current) in
+    max(0, last + current)
+    }
+    .sink { _ in }
+    .store(in: &subscriptions)
+
 // MARK: - Replace empty
 
 [String]().publisher
