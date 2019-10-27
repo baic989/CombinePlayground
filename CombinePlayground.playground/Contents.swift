@@ -5,6 +5,13 @@ import Combine
 
 var subscriptions = Set<AnyCancellable>()
 
+// MARK: - Remove duplicates
+
+let numbers = [1, 2, 2, 2, 3, 4, 5, 5, 6].publisher
+numbers.removeDuplicates().sink { value in
+    print(value)
+}.store(in: &subscriptions)
+
 // MARK: - Scan
 
 var dailyGainLoss: Int {
