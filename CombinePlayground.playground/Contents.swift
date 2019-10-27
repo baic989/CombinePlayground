@@ -5,12 +5,20 @@ import Combine
 
 var subscriptions = Set<AnyCancellable>()
 
+// MARK: - Replace empty
+
+[String]().publisher
+    .replaceEmpty(with: "IT'S EMPTY!")
+    .sink(receiveValue: { print($0) })
+    .store(in: &subscriptions)
+
 // MARK: - Replace nil
 
 ["A", nil, "C"].publisher
     .replaceNil(with: "-")
     .map{ $0! }
     .sink(receiveValue: { print($0) })
+    .store(in: &subscriptions)
 
 // MARK: - Flat map
 
@@ -27,6 +35,7 @@ struct Human {
 let humanWarrior = Human(name: "War", health: 100)
 let humanMage = Human(name: "Mag", health: 50)
 
+// Flat map will dig into the arena publisher and access it's inner publisher's value
 let arena = CurrentValueSubject<Human, Never>(humanWarrior)
 arena.flatMap({
     return $0.health
@@ -42,6 +51,7 @@ arena.value = humanMage
 
 // MARK: - Try map
 
+// Handle possible error
 Just("Invalid path").tryMap {
     try FileManager.default.contentsOfDirectory(atPath: $0)
 }.sink(receiveCompletion: { completion in
@@ -62,13 +72,14 @@ struct Player {
 let mage = Player(hp: 10, mana: 30)
 let magePublisher = PassthroughSubject<Player, Never>()
 
+// Access properties on struct via map and key path
 magePublisher.map(\.hp, \.mana).sink { hp, mana in
     print("Mage has \(hp)hp and \(mana)mana")
 }.store(in: &subscriptions)
 
 magePublisher.send(mage)
 
-// MARK: - Collect operator
+// MARK: - Map
 
 [1, 2, 3, 4, 5].publisher.map({ input -> Int in
     input * input
@@ -80,6 +91,7 @@ magePublisher.send(mage)
 
 // MARK: - Collect operator
 
+// Collects and spits 2 by 2
 ["A", "B", "C", "D", "E"].publisher.collect(2).sink(receiveCompletion: { completion in
     print("Completion", completion)
 }) { value in
@@ -97,12 +109,6 @@ let futureIncrement = Future<Int, Never> { promise in
     }
 }
 
-//let s = futureIncrement.sink(receiveCompletion: {
-//    print($0)
-//}) {
-//    print($0)
-//}
-
 // Storing directly in subscriptions set instead of variable
 futureIncrement.sink(receiveCompletion: {
     print($0)
@@ -115,9 +121,6 @@ futureIncrement.sink(receiveCompletion: {
 }) {
     print("Second", $0)
 }.store(in: &subscriptions)
-
-// Start future increment printed only once which means that future does not re-execute a promise. It replays the output.
-// Also, prmise executes right away, without a subscriber like standard publisher
 
 // MARK: - Custom Subscriber
 
