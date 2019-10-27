@@ -5,6 +5,14 @@ import Combine
 
 var subscriptions = Set<AnyCancellable>()
 
+// MARK: - Compact map
+
+let mixed = ["asdf", "1.2", "fdsa", "2.1"].publisher
+mixed
+    .compactMap({ Float($0) })
+    .sink(receiveValue: { print($0) })
+    .store(in: &subscriptions)
+
 // MARK: - Remove duplicates
 
 let numbers = [1, 2, 2, 2, 3, 4, 5, 5, 6].publisher
