@@ -5,6 +5,34 @@ import Combine
 
 var subscriptions = Set<AnyCancellable>()
 
+// MARK: - Flat map
+
+struct Human {
+    let name: String
+    let health: CurrentValueSubject<Int, Never>
+
+    init(name: String, health: Int) {
+        self.name = name
+        self.health = CurrentValueSubject(health)
+    }
+}
+
+let humanWarrior = Human(name: "War", health: 100)
+let humanMage = Human(name: "Mag", health: 50)
+
+let arena = CurrentValueSubject<Human, Never>(humanWarrior)
+arena.flatMap({
+    return $0.health
+}).sink(receiveCompletion: { completion in
+    print("Completion: \(completion)")
+}) { value in
+    print("health at: \(value)")
+}.store(in: &subscriptions)
+
+humanWarrior.health.value = 90
+
+arena.value = humanMage
+
 // MARK: - Try map
 
 Just("Invalid path").tryMap {
