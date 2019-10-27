@@ -5,6 +5,13 @@ import Combine
 
 var subscriptions = Set<AnyCancellable>()
 
+// MARK: - Replace nil
+
+["A", nil, "C"].publisher
+    .replaceNil(with: "-")
+    .map{ $0! }
+    .sink(receiveValue: { print($0) })
+
 // MARK: - Flat map
 
 struct Human {
