@@ -5,6 +5,15 @@ import Combine
 
 var subscriptions = Set<AnyCancellable>()
 
+// MARK: - Ignore output
+
+let bigArray = (0...10000).publisher
+bigArray.ignoreOutput().sink(receiveCompletion: { completion in
+    print("Completion:", completion)
+}) { value in
+    print("Got:", value)
+}.store(in: &subscriptions)
+
 // MARK: - Compact map
 
 let mixed = ["asdf", "1.2", "fdsa", "2.1"].publisher
