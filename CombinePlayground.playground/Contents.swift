@@ -5,6 +5,30 @@ import Combine
 
 var subscriptions = Set<AnyCancellable>()
 let numbersPublisher = (1...10).publisher
+let waitingPublisher = PassthroughSubject<Int, Never>()
+let awaitedPublisher = PassthroughSubject<Void, Never>()
+
+// MARK: - Prefix until output from
+
+waitingPublisher
+    .prefix(untilOutputFrom: awaitedPublisher)
+    .sink(receiveValue: { print($0) })
+    .store(in: &subscriptions)
+
+(1...10).forEach { value in
+    waitingPublisher.send(value)
+
+    if value == 3 {
+        awaitedPublisher.send()
+    }
+}
+
+// MARK: - Prefix while
+
+numbersPublisher
+    .prefix(while: { $0 < 5 })
+    .sink(receiveValue: { print($0) })
+    .store(in: &subscriptions)
 
 // MARK: - Prefix / take first
 
@@ -14,9 +38,6 @@ numbersPublisher
     .store(in: &subscriptions)
 
 // MARK: - Drop until output from
-
-let awaitedPublisher = PassthroughSubject<Void, Never>()
-let waitingPublisher = PassthroughSubject<Int, Never>()
 
 waitingPublisher.drop(untilOutputFrom: awaitedPublisher).sink(receiveValue: { print($0) }).store(in: &subscriptions)
 
