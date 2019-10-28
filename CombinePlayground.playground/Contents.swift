@@ -4,6 +4,53 @@ import Combine
 // MARK: - Subscription storage
 
 var subscriptions = Set<AnyCancellable>()
+let numbersPublisher = (1...10).publisher
+
+// MARK: - Drop while
+
+// Drop while doesnt really behave as I was expecting
+// Having $0 % 5 == 0 I expected it to drop all values untill it found one divisible by 5
+// But once it gets false, it just sinks all the other values
+numbersPublisher
+    .drop(while: {
+        print($0 % 5 != 0)
+        return $0 % 5 != 0
+    })
+    .sink(receiveValue: { print($0) })
+    .store(in: &subscriptions)
+
+// MARK: - Drop first
+
+numbersPublisher
+    .dropFirst(3)
+    .sink(receiveValue: { print($0) })
+    .store(in: &subscriptions)
+
+// MARK: - Filter
+
+let findEven = (1...9).publisher
+findEven
+    .filter({ $0 % 2 == 0 })
+    .sink(receiveValue: { print($0) })
+    .store(in: &subscriptions)
+
+// MARK: - Last where
+
+findEven.last { value in
+    value % 2 == 0
+}.sink(receiveCompletion: { completion in
+    print("Completion:", completion)
+}) { value in
+    print("Last even:", value)
+}
+
+// MARK: - First where
+
+findEven.first { value in
+    value % 2 == 0
+}.sink { value in
+    print("First even value:", value)
+}
 
 // MARK: - Ignore output
 
@@ -24,8 +71,8 @@ mixed
 
 // MARK: - Remove duplicates
 
-let numbers = [1, 2, 2, 2, 3, 4, 5, 5, 6].publisher
-numbers.removeDuplicates().sink { value in
+let duplicates = [1, 2, 2, 2, 3, 4, 5, 5, 6].publisher
+duplicates.removeDuplicates().sink { value in
     print(value)
 }.store(in: &subscriptions)
 
@@ -98,8 +145,6 @@ Just("Invalid path").tryMap {
 }) { data in
     print(data)
 }.store(in: &subscriptions)
-
-
 
 // MARK: - Map oprator on key paths
 
