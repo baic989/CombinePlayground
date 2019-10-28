@@ -1,10 +1,33 @@
 import Foundation
 import Combine
 
-// MARK: - Subscription storage
+// MARK: - Subscription storage & consts
 
 var subscriptions = Set<AnyCancellable>()
 let numbersPublisher = (1...10).publisher
+
+// MARK: - Prefix / take first
+
+numbersPublisher
+    .prefix(5)
+    .sink(receiveValue: { print($0) })
+    .store(in: &subscriptions)
+
+// MARK: - Drop until output from
+
+let awaitedPublisher = PassthroughSubject<Void, Never>()
+let waitingPublisher = PassthroughSubject<Int, Never>()
+
+waitingPublisher.drop(untilOutputFrom: awaitedPublisher).sink(receiveValue: { print($0) }).store(in: &subscriptions)
+
+(1...5).forEach { value in
+
+    waitingPublisher.send(value)
+
+    if value == 3 {
+        awaitedPublisher.send()
+    }
+}
 
 // MARK: - Drop while
 
