@@ -8,6 +8,48 @@ let numbersPublisher = (1...10).publisher
 let waitingPublisher = PassthroughSubject<Int, Never>()
 let awaitedPublisher = PassthroughSubject<Void, Never>()
 
+// MARK: - Append publisher
+
+let append1 = [1, 2].publisher
+let append2 = [3, 4].publisher
+
+append1
+    .append(append2)
+    .sink(receiveValue: { print($0) })
+    .store(in: &subscriptions)
+
+// MARK: - Append passthrough
+
+let appPass = PassthroughSubject<Int, Never>()
+appPass
+    .append(3)
+    .append(4)
+    .sink(receiveValue: { print($0) })
+    .store(in: &subscriptions)
+
+appPass.send(1)
+appPass.send(2)
+appPass.send(completion: .finished)
+
+// MARK: - Append output
+
+numbersPublisher
+    .append([11, 12])
+    .sink(receiveValue: { print($0) })
+    .store(in: &subscriptions)
+
+// MARK: Prepend passtrough
+
+let prepPass = PassthroughSubject<Int, Never>()
+numbersPublisher
+    .prepend(prepPass)
+    .sink(receiveValue: { print($0) })
+    .store(in: &subscriptions)
+
+prepPass.send(-1)
+prepPass.send(-0)
+prepPass.send(completion: .finished)
+
 // MARK: - Prepend publisher
 
 let prepend = [-1, 0].publisher
