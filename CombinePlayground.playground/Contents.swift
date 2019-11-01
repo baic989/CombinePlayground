@@ -8,6 +8,22 @@ let numbersPublisher = (1...10).publisher
 let waitingPublisher = PassthroughSubject<Int, Never>()
 let awaitedPublisher = PassthroughSubject<Void, Never>()
 
+// MARK: - Prepend publisher
+
+let prepend = [-1, 0].publisher
+numbersPublisher
+    .prepend(prepend)
+    .sink(receiveValue: { print($0) })
+    .store(in: &subscriptions)
+
+// MARK: - Prepend output
+
+numbersPublisher
+    .prepend([-1, 0])
+    .prepend([-3, -2])
+    .sink(receiveValue: { print($0) })
+    .store(in: &subscriptions)
+
 // MARK: - Prefix until output from
 
 waitingPublisher
