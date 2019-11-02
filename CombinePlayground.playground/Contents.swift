@@ -9,6 +9,26 @@ let numbersPublisher = (1...10).publisher
 let waitingPublisher = PassthroughSubject<Int, Never>()
 let awaitedPublisher = PassthroughSubject<Void, Never>()
 
+// MARK: - Zip
+
+// Difference with combine latest is that zip waits for all publishers
+// to emit a value (just like Swift's zip which pairs indexes)
+
+let zip1 = PassthroughSubject<Int, Never>()
+let zip2 = PassthroughSubject<String, Never>()
+
+zip1.zip(zip2).sink { number, text in
+    print(number, text)
+}.store(in: &subscriptions)
+
+zip1.send(1)
+zip1.send(2)
+
+zip2.send("a")
+zip2.send("b")
+
+zip1.send(3)
+
 // MARK: - Combine latest
 
 let comb1 = PassthroughSubject<Int, Never>()
