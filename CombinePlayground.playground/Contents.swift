@@ -9,12 +9,31 @@ let numbersPublisher = (1...10).publisher
 let waitingPublisher = PassthroughSubject<Int, Never>()
 let awaitedPublisher = PassthroughSubject<Void, Never>()
 
+// MARK: - Combine latest
+
+let comb1 = PassthroughSubject<Int, Never>()
+let comb2 = PassthroughSubject<String, Never>()
+
+comb1.combineLatest(comb2).sink { number, text in
+    print(number, text)
+}.store(in: &subscriptions)
+
+comb1.send(1)
+comb1.send(2)
+
+comb2.send("a")
+comb2.send("b")
+
+comb1.send(3)
+
 // MARK: - Merge
 
 let merge1 = PassthroughSubject<Int, Never>()
 let merge2 = PassthroughSubject<Int, Never>()
 
-merge1.merge(with: merge2).sink(receiveValue: { print($0) }).store(in: &subscriptions)
+merge1.merge(with: merge2)
+    .sink(receiveValue: { print($0) })
+    .store(in: &subscriptions)
 
 merge1.send(1)
 merge1.send(2)
