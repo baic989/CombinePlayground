@@ -1,4 +1,5 @@
 import Foundation
+import UIKit
 import Combine
 
 // MARK: - Subscription storage & consts
@@ -7,6 +8,36 @@ var subscriptions = Set<AnyCancellable>()
 let numbersPublisher = (1...10).publisher
 let waitingPublisher = PassthroughSubject<Int, Never>()
 let awaitedPublisher = PassthroughSubject<Void, Never>()
+
+// MARK: - Switch to latest
+
+let randomImageURL = URL(string: "https://source.unsplash.com/random")!
+func getRandomImage() -> AnyPublisher<UIImage?, Never> {
+
+    return URLSession.shared
+        .dataTaskPublisher(for: randomImageURL)
+        .map{ data, _ in UIImage(data: data) }
+        .print("image")
+        .replaceError(with: nil)
+        .eraseToAnyPublisher()
+}
+
+let taps = PassthroughSubject<Void, Never>()
+taps
+    .map({ _ in getRandomImage() })
+    .switchToLatest()
+    .sink(receiveValue: { _ in })
+    .store(in: &subscriptions)
+
+taps.send()
+
+DispatchQueue.main.asyncAfter(deadline: .now() + 4) {
+    taps.send()
+}
+
+DispatchQueue.main.asyncAfter(deadline: .now() + 4.1) {
+    taps.send()
+}
 
 // MARK: - Append publisher
 
