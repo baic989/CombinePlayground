@@ -9,6 +9,20 @@ let numbersPublisher = (1...10).publisher
 let waitingPublisher = PassthroughSubject<Int, Never>()
 let awaitedPublisher = PassthroughSubject<Void, Never>()
 
+// MARK: - Merge
+
+let merge1 = PassthroughSubject<Int, Never>()
+let merge2 = PassthroughSubject<Int, Never>()
+
+merge1.merge(with: merge2).sink(receiveValue: { print($0) }).store(in: &subscriptions)
+
+merge1.send(1)
+merge1.send(2)
+
+merge2.send(3)
+
+merge1.send(4)
+
 // MARK: - Switch to latest
 
 let randomImageURL = URL(string: "https://source.unsplash.com/random")!
