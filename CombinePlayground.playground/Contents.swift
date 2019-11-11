@@ -9,6 +9,15 @@ let numbersPublisher = (1...10).publisher
 let waitingPublisher = PassthroughSubject<Int, Never>()
 let awaitedPublisher = PassthroughSubject<Void, Never>()
 
+// MARK: - Delayed publisher
+
+Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+    .delay(for: 5, scheduler: DispatchQueue.main)
+    .sink(receiveValue: { date in
+        print(date)
+    })
+    .store(in: &subscriptions)
+
 // MARK: - Zip
 
 // Difference with combine latest is that zip waits for all publishers
